@@ -56,31 +56,27 @@ final class PresentationHelper<T: NavigationCoordinatable>: ObservableObject {
                         )
                     }
                 case.fullScreen:
-                    if #available(iOS 14, *, *) {
-                        if presentable is AnyView {
-                            let view = AnyView(NavigationCoordinatableView(id: nextId, coordinator: coordinator))
+                    if presentable is AnyView {
+                        let view = AnyView(NavigationCoordinatableView(id: nextId, coordinator: coordinator))
 
-                            self.presented = Presented(
-                                view: AnyView(
-                                    NavigationView(
-                                        content: {
-                                            view.navigationBarHidden(true)
-                                        }
-                                    )
-                                    .navigationViewStyle(StackNavigationViewStyle())
-                                ),
-                                type: .fullScreen
-                            )
-                        } else {
-                            self.presented = Presented(
-                                view: AnyView(
-                                    presentable.view()
-                                ),
-                                type: .fullScreen
-                            )
-                        }
+                        self.presented = Presented(
+                            view: AnyView(
+                                NavigationView(
+                                    content: {
+                                        view.navigationBarHidden(true)
+                                    }
+                                )
+                                .navigationViewStyle(StackNavigationViewStyle())
+                            ),
+                            type: .fullScreen
+                        )
                     } else {
-                        fatalError()
+                        self.presented = Presented(
+                            view: AnyView(
+                                presentable.view()
+                            ),
+                            type: .fullScreen
+                        )
                     }
                 }
             }

@@ -4,7 +4,6 @@ import SwiftUI
 public enum PresentationType {
     case modal
     case push
-    @available(iOS 14, *)
     case fullScreen
     
     var isModal: Bool {
@@ -25,7 +24,6 @@ public enum PresentationType {
         }
     }
     
-    @available(iOS 14, *)
     var isFullScreen: Bool {
         switch self {
         case .fullScreen:
