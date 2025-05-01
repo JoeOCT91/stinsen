@@ -15,70 +15,115 @@ struct NavigationCoordinatableView<T: NavigationCoordinatable>: View {
         commonView
             .environmentObject(router)
             .background(
-                Color
-                    .clear
-                    .fullScreenCover(isPresented: Binding<Bool>.init(get: { () -> Bool in
-                        return presentationHelper.presented?.type.isFullScreen == true
-                    }, set: { _ in
-                        self.coordinator.appear(self.id)
-                    }), onDismiss: {
-                        self.coordinator.stack.dismissalAction[id]?()
-                        self.coordinator.stack.dismissalAction[id] = nil
-                    }, content: { () -> AnyView in
-                        return { () -> AnyView in
-                            if let view = presentationHelper.presented?.view {
-                                return AnyView(view)
-                            } else {
-                                return AnyView(EmptyView())
-                            }
-                        }()
-                    })
-                    .environmentObject(router)
+                createFullScreenCoverView()
             )
+    }
+    
+    // Creates fullScreenCover view for fullScreen presentations
+    private func createFullScreenCoverView() -> some View {
+        Color.clear
+            .fullScreenCover(
+                isPresented: createFullScreenPresentationBinding(),
+                onDismiss: handleDismissal,
+                content: createFullScreenContent
+            )
+            .environmentObject(router)
+    }
+    
+    // Creates binding for fullScreen presentation state
+    private func createFullScreenPresentationBinding() -> Binding<Bool> {
+        Binding<Bool>(
+            get: { 
+                return presentationHelper.presented?.type.isFullScreen == true
+            },
+            set: { _ in
+                self.coordinator.appear(self.id)
+            }
+        )
+    }
+    
+    // Creates the content for fullScreen presentation
+    private func createFullScreenContent() -> AnyView {
+        if let view = presentationHelper.presented?.view {
+            return AnyView(view)
+        } else {
+            return AnyView(EmptyView())
+        }
     }
     
     @ViewBuilder
     var commonView: some View {
-        (id == -1 ? AnyView(self.coordinator.customize(AnyView(root.item.child.view()))) : AnyView(self.start!))
+        let mainContent = id == -1 
+            ? AnyView(self.coordinator.customize(AnyView(root.item.child.view()))) 
+            : AnyView(self.start!)
+        
+        mainContent
             .background(
-                NavigationLink(
-                    destination: { () -> AnyView in
-                        if let view = presentationHelper.presented?.view {
-                            return AnyView(view.onDisappear {
-                                self.coordinator.stack.dismissalAction[id]?()
-                                self.coordinator.stack.dismissalAction[id] = nil
-                            })
-                        } else {
-                            return AnyView(EmptyView())
-                        }
-                    }(),
-                    isActive: Binding<Bool>.init(get: { () -> Bool in
-                        return presentationHelper.presented?.type.isPush == true
-                    }, set: { _ in
-                        self.coordinator.appear(self.id)
-                    }),
-                    label: {
-                        EmptyView()
-                    }
-                )
-                .hidden()
+                createHiddenNavigationLink()
             )
-            .sheet(isPresented: Binding<Bool>.init(get: { () -> Bool in
-                return presentationHelper.presented?.type.isModal == true
-            }, set: { _ in
+            .sheet(
+                isPresented: createModalPresentationBinding(),
+                onDismiss: handleDismissal,
+                content: createModalContent
+            )
+    }
+    
+    // Creates the hidden navigation link for push navigation
+    private func createHiddenNavigationLink() -> some View {
+        NavigationLink(
+            destination: createPushDestination(),
+            isActive: createPushNavigationBinding(),
+            label: { EmptyView() }
+        )
+        .hidden()
+    }
+    
+    // Creates the destination view for push navigation
+    private func createPushDestination() -> AnyView {
+        if let view = presentationHelper.presented?.view {
+            return AnyView(view.onDisappear(perform: handleDismissal))
+        } else {
+            return AnyView(EmptyView())
+        }
+    }
+    
+    // Creates binding for push navigation state
+    private func createPushNavigationBinding() -> Binding<Bool> {
+        Binding<Bool>(
+            get: { 
+                return presentationHelper.presented?.type.isPush == true
+            },
+            set: { _ in
                 self.coordinator.appear(self.id)
-            }), onDismiss: {
-                self.coordinator.stack.dismissalAction[id]?()
-                self.coordinator.stack.dismissalAction[id] = nil
-            }, content: { () -> AnyView in
-                return { () -> AnyView in
-                    if let view = presentationHelper.presented?.view {
-                        return AnyView(view)
-                    } else {
-                        return AnyView(EmptyView())
-                    }
-                }()
-            })
+            }
+        )
+    }
+    
+    // Creates binding for modal presentation state
+    private func createModalPresentationBinding() -> Binding<Bool> {
+        Binding<Bool>(
+            get: { 
+                return presentationHelper.presented?.type.isModal == true
+            },
+            set: { _ in
+                self.coordinator.appear(self.id)
+            }
+        )
+    }
+    
+    // Handles dismissal actions
+    private func handleDismissal() {
+        self.coordinator.stack.dismissalAction[id]?()
+        self.coordinator.stack.dismissalAction[id] = nil
+    }
+    
+    // Creates the content for modal presentation
+    private func createModalContent() -> AnyView {
+        if let view = presentationHelper.presented?.view {
+            return AnyView(view)
+        } else {
+            return AnyView(EmptyView())
+        }
     }
     
     init(id: Int, coordinator: T) {
