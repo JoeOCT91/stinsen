@@ -22,12 +22,14 @@ final class PresentationHelper<T: NavigationCoordinatable>: ObservableObject {
                 switch value.presentationType {
                 case .modal:
                     if presentable is AnyView {
-                        let view = AnyView(NavigationCoordinatableView(id: nextId, coordinator: coordinator))
-
+                        // Create a NavigationCoordinatableView for the next screen in the stack
+                        let view = NavigationCoordinatableView(id: nextId, coordinator: coordinator)
+                        // The router is automatically added to the environment in NavigationCoordinatableView
+                        
                         self.presented = Presented(
                             view: AnyView(
                                 SwiftUI.NavigationStack {
-                                    view
+                                    AnyView(view)
                                 }
                             ),
                             type: .modal
@@ -39,14 +41,14 @@ final class PresentationHelper<T: NavigationCoordinatable>: ObservableObject {
                         )
                     }
                 case .push:
+                    // For push navigation, we'll use the NavigationPath in the stack
+                    // No need to create a presented view since it will be handled by the NavigationStack
                     if presentable is AnyView {
-                        let view = AnyView(NavigationCoordinatableView(id: nextId, coordinator: coordinator))
-
-                        self.presented = Presented(
-                            view: view,
-                            type: .push
-                        )
+                        // We don't need to set presented for push navigation anymore
+                        // This will be handled by the coordinatorStack.navigationPath
+                        navigationStack.updateNavigationPath()
                     } else {
+                        // For non-AnyView presentables, fall back to the old behavior
                         self.presented = Presented(
                             view: presentable.view(),
                             type: .push
@@ -54,12 +56,14 @@ final class PresentationHelper<T: NavigationCoordinatable>: ObservableObject {
                     }
                 case.fullScreen:
                     if presentable is AnyView {
-                        let view = AnyView(NavigationCoordinatableView(id: nextId, coordinator: coordinator))
-
+                        // Create a NavigationCoordinatableView for the next screen in the stack
+                        let view = NavigationCoordinatableView(id: nextId, coordinator: coordinator)
+                        // The router is automatically added to the environment in NavigationCoordinatableView
+                        
                         self.presented = Presented(
                             view: AnyView(
                                 SwiftUI.NavigationStack {
-                                    view
+                                    AnyView(view)
                                 }
                             ),
                             type: .fullScreen

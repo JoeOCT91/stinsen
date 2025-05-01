@@ -18,8 +18,9 @@ public class NavigationRoot: ObservableObject {
     }
 }
 
-/// Represents a stack of routes
-public class NavigationStack<T: NavigationCoordinatable> {
+/// Represents a coordinator's navigation stack and integrates with SwiftUI.NavigationStack.
+/// This class manages both traditional Stinsen navigation and SwiftUI's NavigationPath-based navigation.
+public class CoordinatorNavigationStack<T: NavigationCoordinatable>: ObservableObject {
     var dismissalAction: [Int: () -> Void] = [:]
     
     weak var parent: ChildDismissable?
@@ -28,7 +29,11 @@ public class NavigationStack<T: NavigationCoordinatable> {
     let initialInput: Any?
     var root: NavigationRoot!
     
+    /// The stack of navigation items (screens/coordinators)
     @Published var value: [NavigationStackItem]
+    
+    /// The SwiftUI navigation path for use with SwiftUI.NavigationStack
+    @Published var navigationPath = NavigationPath()
     
     public init(initial: PartialKeyPath<T>, _ initialInput: Any? = nil) {
         self.value = []
@@ -36,10 +41,27 @@ public class NavigationStack<T: NavigationCoordinatable> {
         self.initialInput = initialInput
         self.root = nil
     }
+    
+    /// Updates the SwiftUI navigation path when stack changes
+    /// This synchronizes the traditional Stinsen navigation stack with
+    /// SwiftUI's NavigationPath for SwiftUI.NavigationStack compatibility
+    func updateNavigationPath() {
+        // We only include push navigation items in the path
+        let pathItems = value.filter { $0.presentationType.isPush }
+        
+        // Clear the path and rebuild it
+        navigationPath = NavigationPath()
+        
+        // Add each item to the path
+        for item in pathItems {
+            // Using the keyPath as an identifier
+            navigationPath.append(item.keyPath)
+        }
+    }
 }
 
 /// Convenience checks against the navigation stack's contents
-public extension NavigationStack {
+public extension CoordinatorNavigationStack {
     /**
         The Hash of the route at the top of the stack
         - Returns: the hash of the route at the top of the stack or -1
@@ -66,9 +88,25 @@ public extension NavigationStack {
     }
 }
 
-struct NavigationStackItem {
+/// Represents an item in the navigation stack
+struct NavigationStackItem: Identifiable, Hashable {
     let presentationType: PresentationType
     let presentable: ViewPresentable
     let keyPath: Int
     let input: Any?
+    
+    // Required for Identifiable protocol
+    var id: Int { keyPath }
+    
+    // Hashable conformance
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(keyPath)
+    }
+    
+    static func == (lhs: NavigationStackItem, rhs: NavigationStackItem) -> Bool {
+        return lhs.keyPath == rhs.keyPath
+    }
 }
+
+// For backward compatibility
+public typealias NavigationStack<T: NavigationCoordinatable> = CoordinatorNavigationStack<T>
