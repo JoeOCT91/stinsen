@@ -6,10 +6,9 @@ public class NavigationViewCoordinator<T: Coordinatable>: ViewWrapperCoordinator
     public init(_ childCoordinator: T) {
         super.init(childCoordinator) { view in
             AnyView(
-                NavigationView {
+                SwiftUI.NavigationStack {
                     view
                 }
-                .navigationViewStyle(StackNavigationViewStyle())
             )
         }
     }

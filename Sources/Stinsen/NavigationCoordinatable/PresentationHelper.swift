@@ -26,12 +26,9 @@ final class PresentationHelper<T: NavigationCoordinatable>: ObservableObject {
 
                         self.presented = Presented(
                             view: AnyView(
-                                NavigationView(
-                                    content: {
-                                        view.navigationBarHidden(true)
-                                    }
-                                )
-                                .navigationViewStyle(StackNavigationViewStyle())
+                                SwiftUI.NavigationStack {
+                                    view
+                                }
                             ),
                             type: .modal
                         )
@@ -61,12 +58,9 @@ final class PresentationHelper<T: NavigationCoordinatable>: ObservableObject {
 
                         self.presented = Presented(
                             view: AnyView(
-                                NavigationView(
-                                    content: {
-                                        view.navigationBarHidden(true)
-                                    }
-                                )
-                                .navigationViewStyle(StackNavigationViewStyle())
+                                SwiftUI.NavigationStack {
+                                    view
+                                }
                             ),
                             type: .fullScreen
                         )
