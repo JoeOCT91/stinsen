@@ -12,11 +12,7 @@ struct NavigationCoordinatableView<T: NavigationCoordinatable>: View {
     var start: AnyView?
 
     var body: some View {
-        #if os(macOS)
-        commonView
-            .environmentObject(router)
-        #else
-        if #available(iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
+        if #available(iOS 14.0, *) {
             commonView
                 .environmentObject(router)
                 .background(
@@ -46,7 +42,6 @@ struct NavigationCoordinatableView<T: NavigationCoordinatable>: View {
             commonView
                 .environmentObject(router)
         }
-        #endif
     }
     
     @ViewBuilder

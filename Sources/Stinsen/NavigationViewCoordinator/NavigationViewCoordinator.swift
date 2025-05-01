@@ -5,20 +5,12 @@ import SwiftUI
 public class NavigationViewCoordinator<T: Coordinatable>: ViewWrapperCoordinator<T, AnyView> {
     public init(_ childCoordinator: T) {
         super.init(childCoordinator) { view in
-            #if os(macOS)
-            AnyView(
-                NavigationView {
-                    view
-                }
-            )
-            #else
             AnyView(
                 NavigationView {
                     view
                 }
                 .navigationViewStyle(StackNavigationViewStyle())
             )
-            #endif
         }
     }
     
