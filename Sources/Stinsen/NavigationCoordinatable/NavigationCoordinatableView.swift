@@ -12,36 +12,29 @@ struct NavigationCoordinatableView<T: NavigationCoordinatable>: View {
     var start: AnyView?
 
     var body: some View {
-        if #available(iOS 14.0, *) {
-            commonView
-                .environmentObject(router)
-                .background(
-                    // WORKAROUND for iOS < 14.5
-                    // A bug hinders us from using modal and fullScreenCover on the same view
-                    Color
-                        .clear
-                        .fullScreenCover(isPresented: Binding<Bool>.init(get: { () -> Bool in
-                            return presentationHelper.presented?.type.isFullScreen == true
-                        }, set: { _ in
-                            self.coordinator.appear(self.id)
-                        }), onDismiss: {
-                            self.coordinator.stack.dismissalAction[id]?()
-                            self.coordinator.stack.dismissalAction[id] = nil
-                        }, content: { () -> AnyView in
-                            return { () -> AnyView in
-                                if let view = presentationHelper.presented?.view {
-                                    return AnyView(view)
-                                } else {
-                                    return AnyView(EmptyView())
-                                }
-                            }()
-                        })
-                        .environmentObject(router)
-                )
-        } else {
-            commonView
-                .environmentObject(router)
-        }
+        commonView
+            .environmentObject(router)
+            .background(
+                Color
+                    .clear
+                    .fullScreenCover(isPresented: Binding<Bool>.init(get: { () -> Bool in
+                        return presentationHelper.presented?.type.isFullScreen == true
+                    }, set: { _ in
+                        self.coordinator.appear(self.id)
+                    }), onDismiss: {
+                        self.coordinator.stack.dismissalAction[id]?()
+                        self.coordinator.stack.dismissalAction[id] = nil
+                    }, content: { () -> AnyView in
+                        return { () -> AnyView in
+                            if let view = presentationHelper.presented?.view {
+                                return AnyView(view)
+                            } else {
+                                return AnyView(EmptyView())
+                            }
+                        }()
+                    })
+                    .environmentObject(router)
+            )
     }
     
     @ViewBuilder
