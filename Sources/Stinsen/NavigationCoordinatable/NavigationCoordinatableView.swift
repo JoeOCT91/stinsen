@@ -58,24 +58,15 @@ struct NavigationCoordinatableView<T: NavigationCoordinatable>: View {
             : AnyView(self.start!)
         
         mainContent
-            .background(
-                createHiddenNavigationLink()
+            .navigationDestination(
+                isPresented: createPushNavigationBinding(),
+                destination: createPushDestination
             )
             .sheet(
                 isPresented: createModalPresentationBinding(),
                 onDismiss: handleDismissal,
                 content: createModalContent
             )
-    }
-    
-    // Creates the hidden navigation link for push navigation
-    private func createHiddenNavigationLink() -> some View {
-        NavigationLink(
-            destination: createPushDestination(),
-            isActive: createPushNavigationBinding(),
-            label: { EmptyView() }
-        )
-        .hidden()
     }
     
     // Creates the destination view for push navigation
